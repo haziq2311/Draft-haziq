@@ -39,12 +39,14 @@ class HomeScreen extends StatelessWidget {
                         ),
                       ),
                       GestureDetector(
-                        onTap: () => Navigator.pushNamed(context, '/profile_management'),
+                        onTap: () =>
+                            Navigator.pushNamed(context, '/profile_management'),
                         child: const CircleAvatar(
                           backgroundColor: Colors.white,
                           child: Icon(Icons.person, color: Colors.orange),
-                          ),
-                      )],
+                        ),
+                      )
+                    ],
                   ),
                   const SizedBox(height: 8),
                   const Text(
@@ -96,7 +98,7 @@ class HomeScreen extends StatelessWidget {
               icon: Icons.local_shipping,
               title: "Track Orders",
               subtitle: "Monitor your delivery status",
-              onTap: () {},
+              onTap: () => Navigator.pushNamed(context, '/orderhistory'),
             ),
             const SizedBox(height: 80),
           ],
