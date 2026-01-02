@@ -166,7 +166,7 @@ class _AppointmentsPageState extends State<AppointmentsPage> {
                     String displayName = "Loading...";
                     if (userSnapshot.hasData && userSnapshot.data!.exists) {
                       final userData = userSnapshot.data!.data() as Map<String, dynamic>;
-                      displayName = userData['name'] ?? 'Unknown User';
+                      displayName = userData['fullName'] ?? 'Unknown User';
                     } else if (userSnapshot.hasError) {
                       displayName = "Error loading name";
                     }
@@ -222,4 +222,5 @@ class _AppointmentsPageState extends State<AppointmentsPage> {
       ],
     );
   }
+
 }
