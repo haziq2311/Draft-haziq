@@ -2,7 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'bottom_nav.dart';
 import 'admin_product_catalogue_page.dart';
-import 'admin_orders_page.dart'; // Orders page integrated
+import 'admin_orders_page.dart';
+import 'customers_page.dart';// Orders page integrated
 
 class AdminHomeScreen extends StatefulWidget {
   const AdminHomeScreen({super.key});
@@ -103,14 +104,6 @@ class DashboardPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return const Center(child: Text("Dashboard Content"));
-  }
-}
-
-class CustomersPage extends StatelessWidget {
-  const CustomersPage({super.key});
-  @override
-  Widget build(BuildContext context) {
-    return const Center(child: Text("Customers Content"));
   }
 }
 
