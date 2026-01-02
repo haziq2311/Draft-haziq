@@ -1,8 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'bottom_nav.dart';
+
+import 'admin_dashboard.dart';
+import 'admin_orders_page.dart';
 import 'admin_product_catalogue_page.dart';
-import 'admin_orders_page.dart'; // Orders page integrated
+import 'customers_page.dart';
+import 'appointments_page.dart';
+import 'bottom_nav.dart';
 
 class AdminHomeScreen extends StatefulWidget {
   const AdminHomeScreen({super.key});
@@ -21,7 +25,7 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
     super.initState();
     _pages = const [
       DashboardPage(),
-      AdminOrdersPage(), 
+      AdminOrdersPage(),
       AdminProductCataloguePage(),
       CustomersPage(),
       AppointmentsPage(),
@@ -36,34 +40,19 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
       appBar: AppBar(
         title: Text(_getTitle()),
         backgroundColor: themeColor,
-        automaticallyImplyLeading: _currentIndex != 0, // Hide back on Dashboard
-        leading: _currentIndex != 0
-            ? IconButton(
-                icon: const Icon(Icons.arrow_back),
-                onPressed: () {
-                  setState(() {
-                    _currentIndex = 0; // Go back to Dashboard
-                  });
-                },
-              )
-            : null,
+        automaticallyImplyLeading: false,
         actions: [
-          Padding(
-            padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 12.0),
-            child: ElevatedButton.icon(
-              onPressed: () async {
-                await FirebaseAuth.instance.signOut();
-                Navigator.pushNamedAndRemoveUntil(context, '/login', (route) => false);
-              },
-              icon: const Icon(Icons.logout, color: Colors.white, size: 18),
-              label: const Text("Sign Out", style: TextStyle(color: Colors.white)),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: themeColor,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(8),
-                ),
-              ),
-            ),
+          IconButton(
+            icon: const Icon(Icons.logout),
+            onPressed: () async {
+              await FirebaseAuth.instance.signOut();
+              if (!mounted) return;
+              Navigator.pushNamedAndRemoveUntil(
+                context,
+                '/login',
+                (route) => false,
+              );
+            },
           ),
         ],
       ),
@@ -82,42 +71,17 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
   String _getTitle() {
     switch (_currentIndex) {
       case 0:
-        return "Dashboard";
+        return 'Dashboard';
       case 1:
-        return "Orders";
+        return 'Orders';
       case 2:
-        return "Products";
+        return 'Products';
       case 3:
-        return "Customers";
+        return 'Customers';
       case 4:
-        return "Appointments";
+        return 'Appointments';
       default:
-        return "Admin";
+        return 'Admin';
     }
-  }
-}
-
-// Placeholder pages (replace with real implementations)
-class DashboardPage extends StatelessWidget {
-  const DashboardPage({super.key});
-  @override
-  Widget build(BuildContext context) {
-    return const Center(child: Text("Dashboard Content"));
-  }
-}
-
-class CustomersPage extends StatelessWidget {
-  const CustomersPage({super.key});
-  @override
-  Widget build(BuildContext context) {
-    return const Center(child: Text("Customers Content"));
-  }
-}
-
-class AppointmentsPage extends StatelessWidget {
-  const AppointmentsPage({super.key});
-  @override
-  Widget build(BuildContext context) {
-    return const Center(child: Text("Appointments Content"));
   }
 }
