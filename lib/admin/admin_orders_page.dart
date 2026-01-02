@@ -1,108 +1,96 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
-class AdminOrdersPage extends StatefulWidget {
+class AdminOrdersPage extends StatelessWidget {
   const AdminOrdersPage({super.key});
 
   @override
-  State<AdminOrdersPage> createState() => _AdminOrdersPageState();
-}
-
-class _AdminOrdersPageState extends State<AdminOrdersPage> {
-  @override
   Widget build(BuildContext context) {
-    final ordersQuery = FirebaseFirestore.instance
-        .collection('orders')
-        .orderBy('timestamp', descending: true);
+    final ordersRef = FirebaseFirestore.instance.collection('orders');
 
-    return Expanded(
-      child: StreamBuilder<QuerySnapshot>(
-        stream: ordersQuery.snapshots(),
+    return Scaffold(
+      body: StreamBuilder<QuerySnapshot>(
+        stream: ordersRef.orderBy('timestamp', descending: true).snapshots(),
         builder: (context, snapshot) {
-          if (snapshot.hasError) {
-            return const Center(child: Text('Failed to load orders'));
-          }
           if (!snapshot.hasData) {
             return const Center(child: CircularProgressIndicator());
           }
 
           final orders = snapshot.data!.docs;
+
           if (orders.isEmpty) {
-            return const Center(child: Text("No orders found."));
+            return const Center(child: Text("No orders yet."));
           }
 
           return ListView.builder(
             itemCount: orders.length,
             itemBuilder: (context, index) {
               final order = orders[index];
-              final data = order.data() as Map<String, dynamic>;
-
-              final items = data['items'] as List<dynamic>? ?? [];
-              final total = (data['total'] as num?)?.toDouble() ?? 0.0;
-              final timestamp =
-                  (data['timestamp'] as Timestamp?)?.toDate() ?? DateTime.now();
-              final formattedDate =
-                  "${timestamp.year}-${timestamp.month.toString().padLeft(2, '0')}-${timestamp.day.toString().padLeft(2, '0')} ${timestamp.hour.toString().padLeft(2, '0')}:${timestamp.minute.toString().padLeft(2, '0')}";
-
-              final user = data['userEmail'] ?? data['userId'] ?? 'Unknown User';
-              final status = data['status'] ?? 'pending';
+              final items = order['items'] as List<dynamic>;
+              final total = order['total'];
+              final timestamp = order['timestamp']?.toDate() ?? DateTime.now();
+              final customerId = order['userId'] ?? 'Unknown';
+              final status = order['status'] ?? 'Pending';
 
               return Card(
                 margin: const EdgeInsets.all(8),
-                elevation: 2,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
-                ),
                 child: ExpansionTile(
-                  title: Text("Order #${order.id} - RM ${total.toStringAsFixed(2)}"),
-                  subtitle: Text("By: $user\nDate: $formattedDate\nStatus: ${status.toUpperCase()}"),
-                  children: [
-                    // List of items
-                    ...items.map((item) {
-                      final productName = item['productName'] ?? item['productId'] ?? 'Unknown';
-                      final color = item['selectedColor'] ?? 'N/A';
-                      final quantity = item['quantity'] ?? 1;
-
-                      return ListTile(
-                        title: Text(productName),
-                        subtitle: Text("Color: $color x $quantity"),
-                      );
-                    }).toList(),
-
-                    const Divider(),
-
-                    // ===== STATUS BUTTONS =====
-                    Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                      child: Row(
-                        children: [
-                          ElevatedButton(
-                            onPressed: status == 'pending'
-                                ? null
-                                : () {
-                                    order.reference.update({'status': 'pending'});
-                                  },
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: Colors.orange,
-                            ),
-                            child: const Text("Pending"),
-                          ),
-                          const SizedBox(width: 16),
-                          ElevatedButton(
-                            onPressed: status == 'complete'
-                                ? null
-                                : () {
-                                    order.reference.update({'status': 'complete'});
-                                  },
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: Colors.green,
-                            ),
-                            child: const Text("Complete"),
-                          ),
-                        ],
-                      ),
+                  title: FutureBuilder<List<String>>(
+                    future: Future.wait(
+                      items.map((item) {
+                        return FirebaseFirestore.instance
+                            .collection('products')
+                            .doc(item['productId'])
+                            .get()
+                            .then((doc) {
+                          return (doc.data()?['name'] ?? item['productId'])
+                              as String;
+                        }).catchError((e) {
+                          return item['productId'] as String;
+                        });
+                      }).toList(),
                     ),
-                  ],
+                    builder: (context, snapshot) {
+                      final productNames = snapshot.hasData
+                          ? snapshot.data!.join(', ')
+                          : 'Loading...';
+
+                      return RichText(
+                        text: TextSpan(
+                          style: const TextStyle(
+                              color: Colors.black,
+                              fontSize: 16,
+                              fontWeight: FontWeight.w500),
+                          children: [
+                            TextSpan(text: "$productNames - RM "),
+                            TextSpan(text: total.toString()),
+                          ],
+                        ),
+                      );
+                    },
+                  ),
+                  subtitle: Text(
+                      "Customer: $customerId\nStatus: $status\nDate: ${timestamp.toString().split('.')[0]}"),
+                  children: items.map((item) {
+                    return FutureBuilder<DocumentSnapshot>(
+                      future: FirebaseFirestore.instance
+                          .collection('products')
+                          .doc(item['productId'])
+                          .get(),
+                      builder: (context, productSnapshot) {
+                        final productName = productSnapshot.hasData &&
+                                productSnapshot.data!.data() != null
+                            ? productSnapshot.data!['name'] ?? item['productId']
+                            : item['productId'];
+
+                        return ListTile(
+                          title: Text(productName),
+                          subtitle: Text(
+                              "Color: ${item['selectedColor']} x${item['quantity']}"),
+                        );
+                      },
+                    );
+                  }).toList(),
                 ),
               );
             },

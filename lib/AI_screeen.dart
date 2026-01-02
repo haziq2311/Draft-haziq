@@ -42,7 +42,7 @@ class _ChatScreenState extends State<ChatScreen> {
 
   Future<String> sendToGemini(String userMessage, XFile? image) async {
     // PLACE YOUR API KEY HERE
-    const String apiKey = "AIzaSyDwurHHDlVZi7MQsduGU7bVLmwH8mZkqWQ";
+    const String apiKey = "AIzaSyCMroHHutirIkUO068i1C68wFDkMTzxgwI";
 
     final url = Uri.parse(
       "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=$apiKey",
