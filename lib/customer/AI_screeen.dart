@@ -29,13 +29,11 @@ class _ChatScreenState extends State<ChatScreen> {
   bool isTyping = false;
   XFile? _selectedImage;
 
-  // Stable initialization of the model
   late final GenerativeModel _model;
 
   @override
   void initState() {
     super.initState();
-    // Use getInstance with googleAI() to match your Firebase Console setup
     _model = FirebaseAI.googleAI().generativeModel(
       model: 'gemini-2.5-flash',
     );
@@ -52,16 +50,11 @@ class _ChatScreenState extends State<ChatScreen> {
     try {
       final List<Part> parts = [];
 
-      if (userMessage.isNotEmpty) {
-        parts.add(TextPart(userMessage));
-      }
-
+      if (userMessage.isNotEmpty) parts.add(TextPart(userMessage));
       if (image != null) {
         final bytes = await image.readAsBytes();
-        // Updated to use InlineDataPart for better compatibility
         parts.add(InlineDataPart('image/jpeg', bytes));
       }
-
       if (parts.isEmpty) parts.add(TextPart("Hello!"));
 
       final response = await _model.generateContent([Content.multi(parts)]);
@@ -144,19 +137,16 @@ class _ChatScreenState extends State<ChatScreen> {
               controller: scrollController,
               itemCount: messages.length + (isTyping ? 1 : 0),
               itemBuilder: (context, index) {
-                if (isTyping && index == messages.length)
-                  return typingIndicator();
+                if (isTyping && index == messages.length) return typingIndicator();
 
                 final msg = messages[index];
                 bool isUser = msg["sender"] == "user";
 
                 return Align(
-                  alignment:
-                      isUser ? Alignment.centerRight : Alignment.centerLeft,
+                  alignment: isUser ? Alignment.centerRight : Alignment.centerLeft,
                   child: Container(
                     padding: const EdgeInsets.all(12),
-                    margin:
-                        const EdgeInsets.symmetric(vertical: 4, horizontal: 10),
+                    margin: const EdgeInsets.symmetric(vertical: 4, horizontal: 10),
                     constraints: BoxConstraints(
                         maxWidth: MediaQuery.of(context).size.width * 0.75),
                     decoration: BoxDecoration(
@@ -166,8 +156,7 @@ class _ChatScreenState extends State<ChatScreen> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        if (msg["image"] != null)
-                          Image.file(msg["image"], height: 150),
+                        if (msg["image"] != null) Image.file(msg["image"], height: 150),
                         Text(
                           msg["text"] ?? "",
                           style: TextStyle(
@@ -187,22 +176,20 @@ class _ChatScreenState extends State<ChatScreen> {
             color: Colors.white,
             child: Row(
               children: [
-                IconButton(
-                    icon: const Icon(Icons.image), onPressed: _pickImage),
+                IconButton(icon: const Icon(Icons.image), onPressed: _pickImage),
                 Expanded(
                   child: TextField(
                     controller: controller,
-                    decoration:
-                        const InputDecoration(hintText: "Type a message..."),
+                    decoration: const InputDecoration(hintText: "Type a message..."),
                   ),
                 ),
-                IconButton(
-                    icon: const Icon(Icons.send), onPressed: sendMessage),
+                IconButton(icon: const Icon(Icons.send), onPressed: sendMessage),
               ],
             ),
           ),
         ],
       ),
+      // Bottom nav using Option A behavior
       bottomNavigationBar: const AppBottomNav(currentIndex: 1),
     );
   }

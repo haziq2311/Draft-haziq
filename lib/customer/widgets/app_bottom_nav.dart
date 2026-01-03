@@ -11,20 +11,20 @@ class AppBottomNav extends StatelessWidget {
   void _onTap(BuildContext context, int index) {
     if (index == currentIndex) return;
 
-    switch (index) {
-      case 0:
-        Navigator.pushReplacementNamed(context, '/products');
-        break;
-      case 1:
-        Navigator.pushReplacementNamed(context, '/ai');
-        break;
-      case 2:
-        Navigator.pushReplacementNamed(context, '/appointments_menu');
-        break;
-      case 3:
-        Navigator.pushReplacementNamed(context, '/orderhistory');
-        break;
-    }
+    // Define the route names for each tab
+    final tabRoutes = [
+      '/products',           // index 0
+      '/ai',                 // index 1
+      '/appointments_menu',  // index 2
+      '/orderhistory',       // index 3
+    ];
+
+    // When switching tabs, remove everything above Home
+    Navigator.pushNamedAndRemoveUntil(
+      context,
+      tabRoutes[index],
+      (route) => route.settings.name == '/home', // keep Home in stack
+    );
   }
 
   @override

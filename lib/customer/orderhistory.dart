@@ -2,8 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:intl/intl.dart';
+import 'widgets/app_bottom_nav.dart'; // <-- Add bottom nav
 
-class TrackOrdersScreen extends StatefulWidget { 
+class TrackOrdersScreen extends StatefulWidget {
   const TrackOrdersScreen({super.key});
 
   @override
@@ -80,20 +81,15 @@ class _TrackOrdersScreenState extends State<TrackOrdersScreen> {
                       final data =
                           orders[index].data() as Map<String, dynamic>;
 
-                      final items =
-                          (data['items'] as List<dynamic>? ?? []);
+                      final items = (data['items'] as List<dynamic>? ?? []);
                       final status = data['status'] ?? 'pending';
-                      final total =
-                          (data['total'] as num?)?.toDouble() ?? 0.0;
-                      final timestamp =
-                          (data['timestamp'] as Timestamp).toDate();
+                      final total = (data['total'] as num?)?.toDouble() ?? 0.0;
+                      final timestamp = (data['timestamp'] as Timestamp).toDate();
 
-                      // total quantity (SAFE)
+                      // total quantity
                       final totalQty = items.fold<int>(
                         0,
-                        (sum, item) =>
-                            sum +
-                            ((item['quantity'] as num?)?.toInt() ?? 0),
+                        (sum, item) => sum + ((item['quantity'] as num?)?.toInt() ?? 0),
                       );
 
                       return OrderCard(
@@ -112,6 +108,11 @@ class _TrackOrdersScreenState extends State<TrackOrdersScreen> {
           ],
         ),
       ),
+
+      // ====================
+      // Bottom Navigation
+      // ====================
+      bottomNavigationBar: const AppBottomNav(currentIndex: 3), // Orders tab
     );
   }
 }
@@ -166,8 +167,7 @@ class OrderCard extends StatelessWidget {
               ),
               const Spacer(),
               Container(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                 decoration: BoxDecoration(
                   color: statusColor,
                   borderRadius: BorderRadius.circular(20),
@@ -200,13 +200,10 @@ class OrderCard extends StatelessWidget {
 
                 final productData =
                     snapshot.data!.data() as Map<String, dynamic>?;
-                final productName =
-                    productData?['name'] ?? 'Unknown Product';
+                final productName = productData?['name'] ?? 'Unknown Product';
 
                 if (searchQuery.isNotEmpty &&
-                    !productName
-                        .toLowerCase()
-                        .contains(searchQuery)) {
+                    !productName.toLowerCase().contains(searchQuery)) {
                   return const SizedBox();
                 }
 
@@ -245,4 +242,4 @@ class OrderCard extends StatelessWidget {
       ),
     );
   }
-} 
+}
